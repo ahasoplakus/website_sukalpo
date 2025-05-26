@@ -1,0 +1,730 @@
+---
+title: "Creating a Shift Table in R - A tidy approach to create Shift Tables using {tidyverse} and {gt}"
+description: "Posit Table Contest 2024 Honorable Mention"
+date: 04/30/2024
+image: shiftR.png
+---
+
+Here is a workflow to create a Shift Table in R, using the `{tidyverse}` suite for data processing, and `{gt}` to build the desired table layout.
+
+## Required Packages
+
+```{r setup}
+#| warning: false
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(rlang))
+suppressPackageStartupMessages(library(purrr))
+suppressPackageStartupMessages(library(stringr))
+suppressPackageStartupMessages(library(gt))
+suppressPackageStartupMessages(library(here))
+
+# list all files
+files <- list.files(here("R"), pattern = ".R", full.names = TRUE)
+# Read all files
+walk(files, source)
+```
+
+```{r}
+#| echo: false
+# convert expressions to vectors
+expr2var <- function(expressions) {
+  set_names(map_chr(expressions, as_string), names(expressions))
+}
+
+# replace `NA_character_` values with "<Missing>"
+na_to_missing <- function(df) {
+  df |>
+    mutate(across(
+      where(~ is.factor(.x) || is.character(.x)),
+      \(x) {
+        case_match(
+          str_squish(x),
+          "" ~ "<Missing>",
+          NA_character_ ~ "<Missing>",
+          .default = x
+        )
+      }
+    ))
+}
+
+# get treatment totals
+get_trt_total <- function(adsl, trt_vars, trt_val) {
+  trt_vars <- expr2var(trt_vars)
+  select(adsl, all_of(c(trt_vars))) |>
+    distinct() |>
+    filter(.data[[trt_vars[1]]] == trt_val) |>
+    pull()
+}
+
+# adds percentages to values of corresponding cells within a `data.frame`
+add_pct2cols <- function(df, exclude_cols, trt_bign) {
+  select(df, all_of(c(expr2var(exclude_cols)))) |>
+    bind_cols(num_to_pct(df, trt_bign))
+}
+
+# glue percentages to numeric values within cells
+num_to_pct <- function(dataset, denom, digits = 1) {
+  bind_cols(map(names(denom), \(cols) {
+    select(dataset, matches(cols)) |>
+      mutate(across(everything(), \(y) calc_pct(y, denom[[cols]], digits)))
+  }))
+}
+
+# calculate percentages
+calc_pct <- function(x, denom, digits = 1) {
+  if_else(x > 0, paste0(x, " (", round(x / denom * 100, digits), "%)"), as.character(x))
+}
+
+# view intermediate datasets with `DT` extensions
+glimpse_dataset <-
+  function(dataset,
+           display_vars = NULL) {
+    out <- dataset |>
+      mutate(across(where(is.character), as.factor))
+    
+    if (!is.null(display_vars)) {
+      hide_columns <- which(!(colnames(out) %in% expr2var(display_vars)))
+      cols_to_hide <-
+        list(list(targets = hide_columns - 1, visible = FALSE))
+    } else {
+      cols_to_hide <- list()
+    }
+    
+    DT::datatable(
+      out,
+      rownames = FALSE,
+      filter = "top",
+      height = "auto",
+      width = "auto",
+      extensions = c("Buttons", "ColReorder", "Scroller"),
+      options = list(
+        columnDefs = cols_to_hide,
+        searchHighlight = TRUE,
+        searching = TRUE,
+        pageLength = 5,
+        lengthMenu = c(5, 10, 15, 20, 50, 100),
+        dom = "<Bfr<\"dt-scroll\"t>ipl>",
+        buttons = list(
+          list(
+            extend = "colvis",
+            text = "View",
+            scroller = TRUE,
+            collectionLayout = "four-column"
+          )
+        ),
+        colReorder = TRUE
+      )
+    )
+  }
+
+#' Create a dummy dataset to get all combonations of Baseline and Analysis
+#' Range Indicators
+#'
+#' @param df Input dataset
+#' @param trt_var Treatment Variable
+#' @param visit_var Visit Variable
+#' @param analysis_grade_var Analysis Range Indicator (`ANRIND`)
+#' @param base_grade_var Reference Range Indiacator (`BNRIND`)
+#' @param grade_var_order Sorting order of Range Indicator values
+#'
+#' @return `data.frame`
+#'
+get_all_grades <-
+  function(df,
+           trt_var,
+           visit_var,
+           analysis_grade_var,
+           base_grade_var,
+           grade_var_order) {
+    expand_grid(
+      !!trt_var := unique(df[[trt_var]]),
+      !!visit_var := unique(df[[visit_var]]),
+      !!base_grade_var := c(grade_var_order, "Total")
+    ) |>
+      cross_join(tibble(!!analysis_grade_var := grade_var_order))
+  }
+
+#' Summarize Grades by Visit
+#'
+#' @param df Input dataset
+#' @param comb_df Dummy dataset having all combinations of Range Indicators
+#' @param trt_var Treatment Variable
+#' @param group_vars Grouping Variables based on which grades will be summarized
+#' @param analysis_grade_var Analysis Range Indicator (`ANRIND`)
+#' @param base_grade_var Reference Range Indiacator (`BNRIND`)
+#'
+#' @return `data.frame`
+#'
+summarize_grades <-
+  function(df,
+           comb_df,
+           trt_var,
+           group_vars,
+           analysis_grade_var,
+           base_grade_var) {
+    df |>
+      bind_rows(mutate(df, !!base_grade_var := "Total")) |>
+      group_by(!!!syms(c(group_vars, base_grade_var, analysis_grade_var))) |>
+      count(.data[[group_vars[2]]], name = "CNT") |>
+      ungroup() |>
+      full_join(
+        comb_df,
+        by = c(trt_var, group_vars[2], analysis_grade_var, base_grade_var)
+      ) |>
+      mutate(across("CNT", ~ replace_na(.x, 0)))
+  }
+
+#' Count Shifts by Visit
+#'
+#' @param bds_dataset Input analysis dataset
+#' @param trt_var Treatment Variable
+#' @param base_grade_var Reference Range Indiacator (`BNRIND`)
+#' @param analysis_grade_var Analysis Range Indicator (`ANRIND`)
+#' @param grade_var_order Sorting order of Range Indicator values
+#' @param visit_var Visit variable
+#'
+#' @return `data.frame`
+#'
+count_shifts_by_visit <-
+  function(bds_dataset,
+           trt_var,
+           base_grade_var = exprs(BNRIND),
+           analysis_grade_var = exprs(ANRIND),
+           grade_var_order = exprs(Low, Normal, High),
+           visit_var = exprs(AVISIT, AVISITN)) {
+    trt_var <- expr2var(trt_var)
+    base_grade_var <- expr2var(base_grade_var)
+    analysis_grade_var <- expr2var(analysis_grade_var)
+    grade_var_order <- expr2var(grade_var_order)
+    visit_var <- expr2var(visit_var)
+    group_vars <- c(trt_var, visit_var)
+    # create a dataset {all_anrind_comb} with all possible
+    # combinations of Treatment, Parameter and analysis_grade_var`
+    all_anrind_comb <- bds_dataset |>
+      get_all_grades(
+        trt_var, visit_var[1],
+        analysis_grade_var,
+        base_grade_var,
+        grade_var_order
+      )
+    # get the count of parameter shift and merge with {all_anrind_comb}
+    # to preserve all combinations # of `analysis_grade_var`
+    grade_counts <- bds_dataset |>
+      summarize_grades(
+        all_anrind_comb,
+        trt_var,
+        group_vars,
+        analysis_grade_var,
+        base_grade_var
+      ) |>
+      arrange(
+        .data[[trt_var]],
+        factor(.data[[base_grade_var]], levels = c(grade_var_order, "Total"))
+      )
+    ## pivot to get values of `base_grade_var` as columns
+    grade_counts_wide <- grade_counts |>
+      pivot_wider(
+        id_cols = all_of(c(visit_var[1], analysis_grade_var)),
+        names_from = all_of(c(trt_var, base_grade_var)),
+        values_from = "CNT",
+        names_sep = "^"
+      )
+    # calculating the row group total of `analysis_grade_var`
+    post_base_grade_totals <- grade_counts_wide |>
+      summarize(across(where(is.numeric), sum), .by = all_of(visit_var[1])) |>
+      mutate(!!analysis_grade_var := "Total")
+    visit_levels <-
+      arrange(
+        filter(
+          grade_counts, !is.na(.data[[visit_var[2]]])
+        ),
+        by = .data[[visit_var[2]]]
+      ) |>
+      pull(.data[[visit_var[1]]]) |>
+      unique()
+    # adding `base_grade_var` total to main data frame
+    grade_counts_wide |>
+      bind_rows(post_base_grade_totals) |>
+      arrange(
+        factor(.data[[visit_var[1]]], levels = visit_levels),
+        factor(
+          .data[[analysis_grade_var]],
+          levels = c(grade_var_order, "Total")
+        )
+      )
+  }
+
+#' Display Shift Table
+#'
+#' @param dataset Input dataset as `data.frame`
+#' @param param Parameter Label
+#' @param group_col Row Grouping Column
+#' @param stub_header Stub Header
+#' @param rtf_preheader RTF preheader text
+#' @param title Header Title
+#' @param footnote Table Footnote
+#' @param sourcenote Source Note Citation
+#'
+#' @return `gt` table
+#'
+std_shift_display <-
+  function(dataset,
+           param = "",
+           group_col = "AVISIT",
+           stub_header = "Analysis Visit",
+           rtf_preheader = c("Protocol: CDISCPILOT01", "Cutoff date: DDMMYYYY"),
+           title = "",
+           footnote = "This is a footnote",
+           sourcenote = "") {
+    dataset |>
+      gt(groupname_col = group_col, row_group_as_column = TRUE) |>
+      cols_label_with(
+        columns = contains("ANRIND"), \(x) md("Reference<br>Range")
+      ) |>
+      tab_spanner_delim(delim = "^") |>
+      text_transform(
+        fn = \(x) map(x, \(y) md(paste0(y, "<br>Baseline<br>n (%)"))),
+        locations = cells_column_spanners()
+      ) |>
+      tab_stubhead(md(stub_header)) |>
+      tab_footnote(footnote = md(footnote)) |>
+      tab_header(
+        preheader = md(rtf_preheader),
+        title = md(title),
+        subtitle = md(paste0("Parameter = ", param))
+      ) |>
+      tab_source_note(md(sourcenote)) |>
+      tab_style(
+        style = cell_text(weight = "bold"),
+        locations = cells_body(columns = 2)
+      ) |>
+      tab_style(
+        style = cell_text(align = "center"),
+        locations = cells_body(columns = -c(1, 2))
+      ) |>
+      tab_style(
+        style = cell_text(align = "center"),
+        locations = cells_column_labels(columns = -c(1, 2))
+      ) |>
+      tab_options(
+        page.orientation = "landscape",
+        page.numbering = TRUE,
+        page.header.use_tbl_headings = TRUE,
+        page.footer.use_tbl_notes = TRUE,
+        table.background.color = "white",
+        table.font.names = "monospace-slab-serif",
+        row_group.font.weight = "bold",
+        column_labels.font.weight = "bold",
+        heading.title.font.weight = "bold",
+        heading.title.font.size = "20px",
+        heading.padding = "10px",
+        heading.subtitle.font.size = "14px"
+      ) |>
+      opt_css(
+        css = "
+    .gt_heading {
+      border-top-style: hidden !important;
+    }
+    .gt_sourcenote {
+      border-bottom-style: hidden !important;
+    }
+    .gt_table {
+      width: max-content !important;
+    }
+    .gt_subtitle, .gt_footnotes, .gt_sourcenote {
+      text-align: left !important;
+      font-weight: bold !important;
+      color: gray !important;
+    }
+    "
+      )
+  }
+```
+
+## Data used for Analysis
+
+We will make use of the `adsl` and `adlb` test <b>ADaM</b> datasets from the [{pharmaverseadam}](https://github.com/pharmaverse/pharmaverseadam) R package for analysis.
+
+::: panel-tabset
+## ADSL
+
+<b>ADSL is the subject level analysis dataset</b>
+
+```{r}
+adsl <- pharmaverseadam::adsl
+```
+
+```{r}
+#| echo: false
+glimpse_dataset(adsl, display_vars = exprs(USUBJID, SITEID, TRT01A, SAFFL))
+```
+
+## ADLB
+
+<b>ADLB is the analysis dataset for Laboratory Records</b>
+
+```{r}
+adlb <- pharmaverseadam::adlb
+```
+
+```{r}
+#| echo: false
+glimpse_dataset(
+  slice_head(adlb, n = 500),
+  display_vars = exprs(USUBJID, PARAM, PARAMCD, AVISIT, AVAL, BNRIND, ANRIND)
+)
+```
+:::
+
+## Variables used for Analysis
+
+-   USUBJID - Unique Subject Identifier
+-   SAFFL - Safety Population Flag
+-   TRT01A - Actual Treatment Arm for Period 01
+-   PARAM - Parameter
+-   PARAMCD - Parameter Code
+-   AVISIT - Analysis Visit
+-   AVISITN - Analysis Visit (Numeric)
+-   AVAL - Analysis Value
+-   ANL01FL - Analysis Flag 01
+-   BNRIND - Baseline Reference Range Indicator
+-   ANRIND - Analysis Reference Range Indicator
+
+## Programming Flow
+
+### 1. Calculating BIG N
+
+-   Keep only safety subjects (`SAFFL` == `'Y'`) in `adsl`
+-   Count number of subjects in the full safety analysis set within each treatment arm (`TRT01A`)
+
+```{r adsl_n}
+adsl_bign <- adsl |>
+  na_to_missing() |>
+  filter(.data$SAFFL == "Y") |>
+  select(all_of(c("USUBJID", "TRT01A"))) |>
+  add_count(.data$TRT01A, name = "TRT_N")
+```
+
+```{r}
+#| echo: false
+glimpse_dataset(adsl_bign)
+```
+
+### 2. Preprocessing Lab Records
+
+-   Merge `adsl_bign` to `adlb` to add `TRT_N`
+-   Filter out missing values in Baseline Reference Range Indicator (`BNRIND`), Analysis Reference Range Indicator (`ANRIND`) and Analysis Value (`AVAL`)
+-   Subset the resulting data for subjects with post-does records where analysis flag (`ANL01FL`) is equal to `'Y'`
+-   Subset data to keep records within the time period (eg. `Week 2, Week 4, Week 6`) we want to see the shifts in Laboratory Tests
+-   Add `BIG N` to treatment labels by concatenating `TRT_N` with `TRT01A`
+
+```{r prep_adlb}
+adlb_prep <- adlb |>
+  na_to_missing() |>
+  mutate(across(all_of(c("BNRIND", "ANRIND")), str_to_title)) |>
+  left_join(adsl_bign, by = c("USUBJID", "TRT01A")) |>
+  filter(
+    .data$BNRIND != "<Missing>",
+    .data$ANRIND != "<Missing>",
+    !is.na(.data$AVAL),
+    .data$ANL01FL == "Y",
+    .data$AVISIT %in% c("Week 2", "Week 4", "Week 6")
+  ) |>
+  mutate(TRT_VAR = paste0(.data$TRT01A, "<br>(N=", .data$TRT_N, ")")) |>
+  select(-TRT_N)
+```
+
+<br> Subset `adlb_prep` to keep only Hemoglobin records </br>
+
+```{r}
+adlb_hgb <- adlb_prep |>
+  filter(.data$PARAMCD == "HGB")
+```
+
+```{r}
+#| echo: false
+glimpse_dataset(
+  adlb_hgb,
+  exprs(USUBJID, TRT01A, TRT_VAR, PARCAT1, PARAM, AVISIT, BNRIND, ANRIND)
+)
+```
+
+### 3. Get all combinations of Range Indicator values
+
+Create a dummy dataset that contains all possible combination of `BNRIND` and `ANRIND` values by Treatment and Visit.
+
+```{r dummy}
+comb_base_pbase <- expand_grid(
+  TRT_VAR = unique(adlb_hgb[["TRT_VAR"]]),
+  AVISIT = unique(adlb_hgb[["AVISIT"]]),
+  BNRIND = c("Low", "Normal", "High", "Total")
+) |>
+  cross_join(tibble(ANRIND = c("Low", "Normal", "High")))
+```
+
+```{r}
+#| echo: false
+glimpse_dataset(comb_base_pbase)
+```
+
+### 4. Performing Counts by Analysis Visit
+
+```{r count}
+shift_counts <- adlb_hgb |>
+  bind_rows(mutate(adlb_hgb, BNRIND = "Total")) |>
+  group_by(!!!syms(c("TRT_VAR", "AVISITN", "ANRIND", "BNRIND"))) |>
+  count(.data[["AVISIT"]], name = "CNT") |>
+  ungroup() |>
+  # merge dummy dataset to get all combinations of `ANRIND` and `BNRIND` values
+  full_join(comb_base_pbase, by = c("TRT_VAR", "AVISIT", "BNRIND", "ANRIND")) |>
+  mutate(across("CNT", ~ replace_na(.x, 0))) |>
+  arrange(
+    .data[["TRT_VAR"]],
+    factor(.data[["BNRIND"]], levels = c("Low", "Normal", "High", "Total"))
+  )
+```
+
+```{r}
+#| echo: false
+glimpse_dataset(shift_counts)
+```
+
+### 5. Reshaping Data
+
+-   Reshaping data to wide format to get the final Shift Table layout
+-   Adding Post-Baseline Grade Totals
+
+```{r reshape}
+shift_wide <- shift_counts |>
+  pivot_wider(
+    id_cols = all_of(c("AVISIT", "ANRIND")),
+    names_from = all_of(c("TRT_VAR", "BNRIND")),
+    values_from = "CNT",
+    names_sep = "^"
+  )
+
+post_base_grade_totals <- shift_wide |>
+  summarize(across(where(is.numeric), sum), .by = all_of("AVISIT")) |>
+  mutate(ANRIND = "Total")
+
+visit_levels <-
+  arrange(filter(shift_counts, !is.na(.data$AVISITN)), by = .data$AVISITN) |>
+  pull(.data$AVISIT) |>
+  unique()
+
+shift_final <- shift_wide |>
+  bind_rows(post_base_grade_totals) |>
+  arrange(
+    factor(.data$AVISIT, levels = visit_levels),
+    factor(.data$ANRIND, levels = c("Low", "Normal", "High", "Total"))
+  )
+```
+
+An alternate and tidier approach would be to create a function say `count_shifts_by_visit()` to cover <b>Steps 3-5</b>
+
+```{r}
+#| eval: false
+shift_final <-
+  count_shifts_by_visit(
+    bds_dataset = adlb_hgb,
+    trt_var = exprs(TRT_VAR),
+    analysis_grade_var = exprs(ANRIND),
+    base_grade_var = exprs(BNRIND),
+    grade_var_order = exprs(Low, Normal, High),
+    visit_var = exprs(AVISIT, AVISITN)
+  )
+```
+
+```{r}
+#| echo: false
+glimpse_dataset(shift_final)
+```
+
+### 6. Adding Percentages
+
+```{r pct}
+trt_bign <-
+  map(
+    set_names(unique(adsl_bign[["TRT01A"]])),
+    \(trt_val) get_trt_total(adsl_bign, exprs(TRT01A, TRT_N), trt_val)
+  )
+
+shift_final <- shift_final |>
+  add_pct2cols(
+    exclude_cols = exprs(AVISIT, ANRIND),
+    trt_bign = trt_bign
+  )
+```
+
+```{r}
+#| echo: false
+glimpse_dataset(shift_final)
+```
+
+### 7. Displaying the Final Table with `{gt}`
+
+::: panel-tabset
+## Single Parameter (Hemoglobin)
+
+```{r display}
+out <-
+  shift_final |>
+  gt(groupname_col = "AVISIT", row_group_as_column = TRUE) |>
+  cols_label_with(
+    columns = contains("ANRIND"), \(x) md("Reference<br>Range")
+  ) |>
+  tab_spanner_delim(delim = "^") |>
+  text_transform(
+    fn = \(x) map(x, \(y) md(paste0(y, "<br>Baseline<br>n (%)"))),
+    locations = cells_column_spanners()
+  ) |>
+  # headers and footers
+  tab_stubhead(md("Analysis Visit")) |>
+  tab_footnote(footnote = md("N: Number of subjects in the full safety analysis set, within each treatment group<br>n: Subjects with at least one baseline and post-baseline records")) |>
+  tab_header(
+    preheader = c("Protocol: CDISCPILOT01", "Cutoff date: DDMMYYYY"), # for rtf
+    title = md(
+      "Table x.x<br>Shift Table of Lab Hematology<br>(Full Safety Analysis Set)"
+    ),
+    subtitle = paste0("Parameter = ", unique(pull(adlb_hgb, "PARAM")))
+  ) |>
+  tab_source_note(
+    "Source: ADLB DDMMYYYY hh:mm; Listing x.xx; SDTM package: DDMMYYYY"
+  ) |>
+  # cell styling
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = 2)
+  ) |>
+  tab_style(
+    style = cell_text(align = "center"),
+    locations = cells_body(columns = -c(1, 2))
+  ) |>
+  tab_style(
+    style = cell_text(align = "center"),
+    locations = cells_column_labels(columns = -c(1, 2))
+  ) |>
+  # other options
+  tab_options(
+    # rtf options
+    page.orientation = "landscape",
+    page.numbering = TRUE,
+    page.header.use_tbl_headings = TRUE,
+    page.footer.use_tbl_notes = TRUE,
+    # page.height = "18in", uncomment to modify page dimensions while saving as rtf
+    # other styling
+    table.background.color = "white",
+    table.font.names = "monospace-slab-serif",
+    row_group.font.weight = "bold",
+    column_labels.font.weight = "bold",
+    heading.title.font.weight = "bold",
+    heading.title.font.size = "20px",
+    heading.padding = "10px",
+    heading.subtitle.font.size = "14px"
+  ) |>
+  opt_css(
+    css = "
+    .gt_heading {
+      border-top-style: hidden !important;
+    }
+    .gt_sourcenote {
+      border-bottom-style: hidden !important;
+    }
+    .gt_table {
+      width: max-content !important;
+    }
+    .gt_subtitle, .gt_footnotes, .gt_sourcenote {
+      text-align: left !important;
+      font-weight: bold !important;
+      color: gray !important;
+    }
+    "
+  )
+```
+
+```{r out_hgb, results='asis'}
+#| echo: false
+print(out)
+```
+
+## Multiple Parameters
+
+-   Split `adlb_prep` by multiple parameters.
+-   Map over `count_shifts_by_visit()` on the data split by parameters
+-   Add percentages to numeric columns within each resulting `data.frame` from `count_shifts_by_visit()`
+-   Create a function `std_shift_display()` to combine the `{gt}` table display steps and map it over on the `list` output retrieved from the previous step
+
+```{r iteration,results='asis'}
+adlb_multi <- adlb_prep |>
+  filter(toupper(.data$PARAMCD) %in% c("PLAT", "HCT", "MCH")) |>
+  group_nest(.data$PARAM)
+
+shift_out <- map(adlb_multi$data, \(x) {
+  count_shifts_by_visit(
+    bds_dataset = x,
+    trt_var = exprs(TRT_VAR),
+    analysis_grade_var = exprs(ANRIND),
+    base_grade_var = exprs(BNRIND),
+    grade_var_order = exprs(Low, Normal, High),
+    visit_var = exprs(AVISIT, AVISITN)
+  )
+}) |>
+  set_names(adlb_multi$PARAM)
+
+# add percentages
+shift_out <- map(shift_out, \(df) {
+  df |>
+    add_pct2cols(
+      exclude_cols = exprs(AVISIT, ANRIND),
+      trt_bign = trt_bign
+    )
+})
+
+list_out <-
+  map(names(shift_out), \(x) {
+    shift_out[[x]] |>
+      std_shift_display(
+        param = x,
+        group_col = "AVISIT",
+        stub_header = "Analysis Visit",
+        rtf_preheader = "Protocol: CDISCPILOT01",
+        title = "Table x.x<br>Shift Table of Lab
+        Hematology<br>(Full Safety Analysis Set)",
+        footnote = "N: Number of subjects in the full safety analysis set, within each treatment group<br>n: Subjects with at least one baseline and post-baseline records",
+        sourcenote =
+          "Source: ADLB DDMMYYYY hh:mm; Listing x.xx; SDTM package: DDMMYYYY"
+      )
+  })
+
+gt_group(.list = list_out)
+```
+:::
+
+## Colorize cells (Optional)
+
+Suppose we want to highlight values which are `Normal` in Baseline but `Low` or `High` in post-baseline
+
+```{r, results='asis'}
+out |>
+  data_color(
+    columns = contains("Normal"),
+    rows = ANRIND %in% c("High", "Low"),
+    palette = c("white", "lightpink")
+  )
+```
+
+## Saving the Table
+
+```{r save}
+#| eval: false
+
+# as rtf
+gtsave(out, "adlb_rxxxx_20240428.rtf", "path to the output directory")
+# as pdf
+gtsave(out, "adlb_rxxxx_20240428.pdf", "path to the output directory")
+# as word
+gtsave(out, "adlb_rxxxx_20240428.docx", "path to the output directory")
+# as html
+gtsave(out, "adlb_rxxxx_20240428.html", "path to the output directory")
+```

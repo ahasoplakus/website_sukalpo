@@ -1,0 +1,69 @@
+---
+title: ""
+listing:
+  contents: posts
+  sort: "date desc"
+  type: default
+  sort-ui: false
+  filter-ui: false
+page-layout: full
+title-block-banner: false
+---
+
+## Work Experience
+
+<b>Sanofi</b> \| Analytics Principal Statistical Programmer \| Mar 2025 - Present
+
+<b>Pfizer</b> \| Principal Statistical Data Scientist \| Dec 2022 - Mar 2025
+
+<b>GSK</b> \| Senior Programmer (R & Shiny) \| Aug 2021 - Dec 2022
+
+<b>Tata Consultancy Services</b> \| Statistical Programmer \| July 2017 - July 2021
+
+## Skills
+
+```{r, fig.height=6, fig.width=10, results='asis'}
+library(echarts4r)
+
+tibble::tribble(
+  ~ x, ~y,
+  "R", 9.5,
+  "Shiny", 9,
+  "SAS", 7,
+  "RBQM/QTLs", 8,
+  "Github Actions", 8,
+  "Python", 5,
+  "SAS JMP", 8,
+  "HTML/CSS", 7,
+  "Quarto", 8,
+  "Data Viz", 9,
+  "Git", 8,
+  "CDISC Standards", 7
+) |>
+  e_charts(x) |>
+  e_radar(
+    y,
+    max = 10,
+    legend = FALSE,
+    areaStyle = list(),
+    radar = list(
+      shape = "polygon",
+      splitLine = list(show = FALSE),
+      radius = c("0%", "75%")
+    )
+  ) |>
+  e_color(color = "#7a00e6", background = "#fff") |>
+  e_text_style(color = "#000", fontSize = 20, fontFamily = "calibri") |>
+  e_tooltip(trigger = "item")
+```
+
+## Open-Source Projects
+
+**pharmaverse**
+
+[![](open-source.png){fig-align="center"}](https://pharmaverse.org/)
+
+**Othe'R's**
+
+::: column-page
+:::

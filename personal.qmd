@@ -1,0 +1,23 @@
+---
+title: ""
+---
+
+## About Me
+
+-   Born on 5th September
+
+-   From Kolkata, West Bengal
+
+-   Married for 2.5 years
+
+-   Parent to a pup named 'Disco'
+
+::: {layout="[12,-0.2,18]" layout-valign="bottom"}
+![](family.jpg){fig-align="center"}
+
+![](kolkata.jpg){fig-align="center"}
+:::
+
+## Favorites
+
+![](Interests.png){fig-align="center"}

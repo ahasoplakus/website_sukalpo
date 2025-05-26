@@ -1,0 +1,327 @@
+---
+title: "Rolling Stone Album Rankings (Posit Table Contest 2024 - Winner of Best Static Table)"
+description: "The 'New' greatest albums of all time in comparison with the ones appearing in the Top 500 list released in 2003"
+date: 05/15/2024
+image: rolling-stones.gif
+---
+
+```{css}
+#| echo: false
+body {
+  background-color: #fff2d780;
+}
+
+#quarto-content>* {
+    padding-top: 25px;
+    width: max-content;
+}
+
+.quarto-title-block .quarto-title-banner {
+  background-color: #fff2d780 !important;
+}
+
+.quarto-title .title {
+  color: #c61a09;
+  font-size: xxx-large;
+}
+
+.quarto-title-block.default .description {
+  color: #2C4E80;
+  font-size: x-large;
+}
+
+.quarto-title-meta-heading {
+  color: #c61a09;
+}
+
+#title-block-header.quarto-title-block.default .quarto-title-meta-contents {
+    font-size: larger;
+    color: #2c4e80;
+}
+
+#quarto-back-to-top {
+   bottom: -5vh !important;
+}
+```
+
+Check out the Posit Data Table Winners' List here: [Winners of the 2024 Table Contest](https://posit.co/blog/2024-table-contest-winners/)
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+library(readr)
+library(dplyr)
+library(stringr)
+library(gt)
+library(gtExtras)
+```
+
+```{r data_prep}
+#| message: false
+#| echo: false
+
+## reading data
+rolling_stone <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-05-07/rolling_stone.csv')
+## data preparation
+df_albums <- rolling_stone |>
+  filter(if_any(ends_with("2020"), \(x) x <= 50)) |>
+  mutate(
+    Genre = if_else(is.na(genre), "Other", genre),
+    URL = paste0("https://open.spotify.com/album/", album_id)
+  ) |>
+  select(
+    "Album" = "album",
+    "Artist" = "clean_name",
+    "Genre" = "Genre",
+    "Release Year" = "release_year",
+    contains("rank"),
+    "Change (2003-2020)" = "differential",
+    "Peak Position" = "peak_billboard_position",
+    "Weeks on Billboard" = "weeks_on_billboard",
+    "Popularity" = "spotify_popularity",
+    "URL"
+  ) |>
+  arrange(across(ends_with("2020"))) |>
+  rename_with(
+    .cols = contains("rank"),
+    .fn = \(x) str_to_title(paste0(str_replace_all(x, "_", "<br>("), ")"))
+  )
+```
+
+```{r rank_table, results='asis'}
+#| echo: false
+df_albums |>
+  gt() |>
+  ## add bar plot for `Weeks on Billboard`
+  gt_plt_bar(
+    column = "Weeks on Billboard",
+    color = "#322C2B",
+    keep_column = FALSE,
+    width = 60,
+    scale_type = "number"
+    ) |>
+  ## add image for rank difference
+  gt_fa_rank_change(
+    column = contains("Change"),
+    font_color = "match",
+    fa_type = "angles",
+    palette = c("green", "grey", "red")
+  ) |>
+  # spanners
+  tab_spanner(
+    columns = 1:4,
+    label = with_tooltip(html(local_image(filename = "music-album.png", height = 50)), "Album Details"),
+    id = "album"
+  ) |>
+  tab_spanner(
+    columns = 5:8,
+    label = with_tooltip(html(local_image(filename = "rstones.png", height = 50)), "Rolling Stone Rankings"),
+    id = "rstones"
+  ) |>
+  tab_spanner(
+    columns = 9:10,
+    label = with_tooltip(html(local_image(filename = "billboard.png", height = 50)), "Billboard Statistics"),
+    id = "billboard"
+  ) |>
+  tab_spanner(
+    columns = 11:12,
+    label = with_tooltip(html(local_image(filename = "spotify.png", height = 50)), "Spotify"),
+    id = "spotify"
+  ) |>
+  ## table body styling
+  tab_style(
+    style = cell_text(align = "center"),
+    locations = cells_body(columns = is.numeric)
+  ) |>
+  tab_style(
+    style = cell_text(font = google_font("Chivo"), weight = "700"),
+    locations = cells_title()
+  ) |>
+  tab_style(
+    style = cell_text(font = google_font("Poppins")),
+    locations = cells_body()
+  ) |>
+  tab_style(
+    style = cell_text(
+      align = "center",
+      weight = "bold",
+      color = "#EEEEEE",
+      font = google_font("Proza Libre")
+    ),
+    locations = cells_column_labels()
+  ) |>
+   tab_style(
+    style = cell_fill(color = "#e95420"),
+    locations = cells_column_labels()
+  ) |>
+  tab_style(
+    style = cell_fill(color = "#fff2d780"),
+    locations = cells_column_spanners()
+  ) |>
+  tab_style(
+    style = cell_fill(color = "#fff2d780"),
+    locations = cells_title()
+  ) |>
+  tab_style(
+    style = cell_fill(color = "#fff2d780"),
+    locations = cells_source_notes()
+  ) |>
+  tab_style(
+    style = cell_fill(color = "#fff2d780"),
+    locations = cells_footnotes()
+  ) |>
+  tab_style(
+    style = cell_text(color = "#c61a09"),
+    locations = cells_title()
+  ) |>
+  tab_style(
+    style = cell_text(color = "#2c4e80"),
+    locations = cells_footnotes()
+  ) |>
+  tab_style(
+    style = cell_text(color = "#2c4e80"),
+    locations = cells_source_notes()
+  ) |>
+  tab_style(
+    style = cell_text(align = "center", weight = "bold"),
+    locations = cells_column_spanners()
+  ) |>
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_row_groups()
+  ) |>
+  tab_style(
+    style = cell_text(color = "#fff"),
+    locations = cells_body(columns = 11)
+  ) |>
+  tab_style(
+    style = cell_fill(color = "#fff2d780"),
+    locations = cells_body(columns = c(8, 10, 12))
+  ) |>
+  tab_style(
+    style = cell_fill(color = "#000000"),
+    locations = cells_body(columns = 11)
+  ) |>
+  tab_style(
+    style = cell_borders(sides = "right", weight = px(1), color = "#D3D3D3", style = "solid"),
+    locations = cells_column_labels()
+  ) |>
+  tab_style(
+    style = cell_borders(sides = c("top", "bottom"), weight = px(2), color = "#e95420", style = "solid"),
+    locations = cells_column_labels()
+  ) |>
+  tab_style(
+    style = cell_borders(sides = "right", weight = px(1), color = "#e95420", style = "solid"),
+    locations = cells_column_spanners(spanners = c("album", "rstones", "billboard"))
+  ) |>
+  tab_style(
+    style = cell_borders(sides = "bottom", weight = px(2), color = "#e95420", style = "solid"),
+    locations = cells_title()
+  ) |>
+  tab_style(
+    style = cell_borders(sides = c("top", "right", "left"), style = "hidden"),
+    locations = cells_title()
+  ) |>
+  ## coloring values
+  data_color(
+    columns = "Genre",
+    direction = "column",
+    target_columns = c(1:4),
+    palette = "wesanderson::Chevalier1",
+    na_color = "white"
+  ) |>
+  data_color(
+    columns = 5:7,
+    palette = "Redmonder::sPBIRd",
+    direction = "column",
+    method = "numeric",
+    na_color = "white"
+  ) |>
+  data_color(
+    columns = 9,
+    palette = c("#fff2d780", "#322C2B"),
+    method = "numeric",
+    na_color = "white"
+  ) |>
+  ## format spotify urls
+  fmt_url(
+    columns = 12,
+    label = with_tooltip(html(local_image(filename = "play.png", height = 22)), "Play"),
+    show_underline = FALSE
+  ) |>
+  cols_merge(
+    columns = c(11, 12),
+    pattern = "{1} {2}",
+    rows = Popularity > 0
+  ) |>
+  ## substitute missing data
+  sub_missing(
+    columns = contains("Rank"),
+    missing_text = "Outside Top 500"
+  ) |>
+  sub_missing(
+    columns = contains("Popularity"),
+    missing_text = "Not on Spotify"
+  ) |>
+  ## specify column widths
+  cols_width(
+    contains("Release") ~ px(80),
+    contains("Popularity") ~ px(120),
+    contains("Change") ~ px(80),
+    is.numeric ~ px(80),
+    everything() ~ px(150)
+  ) |>
+  ## relabel columns
+  cols_label_with(
+    columns = 5:7,
+    fn = \(x) md(x)
+  ) |>
+  cols_label_with(
+    columns = "Popularity",
+    fn = \(x) md(paste0(x, "<br>Index"))
+  ) |>
+  ## headers and source notes
+  tab_header(
+    title = "Album Rankings by Rolling Stone",
+    subtitle = md("*Top 50 Albums in ascending order based on the rankings released in 2020 [(See Top 500)](https://www.rollingstone.com/music/music-lists/best-albums-of-all-time-1062063/)*")
+  ) |>
+  tab_footnote(
+    "Album details in first four columns are colored by Genre",
+    locations = cells_column_spanners(spanners = "album")
+  ) |>
+  tab_source_note(md("Data sourced from [https://github.com/rfordatascience/tidytuesday/tree/master/data/2024/2024-05-07](https://github.com/rfordatascience/tidytuesday/tree/master/data/2024/2024-05-07)")) |>
+  ## theme
+  tab_options(
+    data_row.padding = px(18),
+    table.font.size = px(16L),
+    footnotes.marks = "numbers"
+  ) |>
+  gt_theme_espn() |>
+  opt_table_outline(width = px(2), color = "#e95420") |>
+  opt_css(
+    css = "
+    .gt_table {
+      width: max-content !important;
+    }
+    .gt_subtitle {
+      color: #2c4e80 !important;
+    }
+    abbr[title], abbr[data-bs-original-title] {
+      cursor: pointer;
+    }
+    .gt_footnote_marks {
+    font-size: 100% !important;
+    font-weight: bold !important;
+    color: #2c4e80 !important;
+    vertical-align: 0.25em !important;
+    }
+    tbody > tr > td > div > div {
+     font-size: 16px !important;
+     font-weight: 500 !important;
+     display: contents !important;
+    }
+    "
+  )
+```

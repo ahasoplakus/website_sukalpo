@@ -1,0 +1,32 @@
+project:
+  type: website
+
+website:
+  title: "Sukalpo Saha"
+  search: false
+  navbar:
+    right:
+      - href: index.qmd
+        text: Hello!
+        icon: person-raised-hand
+      - href: work.qmd
+        text: Work
+        icon: laptop
+      - href: personal.qmd
+        text: About
+        icon: person-badge
+  
+  page-footer:
+    right: "This page is built with R and [Quarto](https://quarto.org/)."
+    left: "&copy; CC-By Sukalpo Saha, 2025"
+
+format:
+  html:
+    theme: [sandstone, _variables.scss]
+    css: styles.css
+    code-fold: true
+    message: false
+    warning: false
+
+editor: visual
+

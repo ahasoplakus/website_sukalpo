@@ -1,0 +1,36 @@
+---
+title: "Sukalpo Saha"
+image: avatar.jpg
+about:
+  template: trestles
+  links:
+    - text: LinkedIn
+      icon: linkedin
+      url: "https://linkedin.com/in/sukalpo-saha-186329b1"
+    - text: GitHub
+      icon: github
+      url: "https://github.com/ahasoplakus"
+    - text: Twitter
+      icon: twitter-x
+      url: "https://twitter.com/saha_sukalpo"
+    - text: Email
+      icon: envelope-at-fill
+      url: "mailto:sukalposaha@gmail.com"
+comments: false
+---
+
+::: column-page
+## Bio
+
+I am an R and Shiny developer with almost 8 years of experience in the pharmaceutical industry. I am all about pushing the limits of statistical programming and reporting by leveraging cutting-edge tools built with R/Python. I love teaming up on open-source projects to create meaningful solutions that enhance efficiency and drive progress in the field.
+
+Outside of work, I am a huge football fan and a movie lover, always drawn to the excitement of the game and the magic of storytelling.
+
+## Education
+
+### University of Hyderabad
+
+*Hyderabad, IN*
+
+Masters (M.Sc) in Statistics \| Jul 2015 - Jul 2017
+:::
