@@ -16,6 +16,9 @@ about:
     - text: Email
       icon: envelope-at-fill
       url: "mailto:sukalposaha@gmail.com"
+    - text: CV
+      icon: file-earmark-person-fill
+      url: "https://ahasoplakus.quarto.pub/kalpoverse/cv.pdf"
 comments: false
 ---
 

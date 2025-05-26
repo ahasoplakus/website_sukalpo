@@ -1,8 +1,11 @@
 project:
   type: website
+  resources:
+    - cv.pdf
 
 website:
   title: "Sukalpo Saha"
+  site-url: "https://ahasoplakus.quarto.pub/kalpoverse/"
   search: false
   navbar:
     right:

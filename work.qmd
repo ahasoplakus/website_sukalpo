@@ -53,7 +53,7 @@ tibble::tribble(
     )
   ) |>
   e_color(color = "#7a00e6", background = "#fff") |>
-  e_text_style(color = "#000", fontSize = 20, fontFamily = "calibri") |>
+  e_text_style(color = "#23004C", fontSize = 20, fontFamily = "calibri") |>
   e_tooltip(trigger = "item")
 ```
 

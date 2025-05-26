@@ -18,7 +18,7 @@
     "href": "work.html#skills",
     "title": "Sukalpo Saha",
     "section": "Skills",
-    "text": "Skills\n\nCode\nlibrary(echarts4r)\n\ntibble::tribble(\n  ~ x, ~y,\n  \"R\", 9.5,\n  \"Shiny\", 9,\n  \"SAS\", 7,\n  \"RBQM/QTLs\", 8,\n  \"Github Actions\", 8,\n  \"Python\", 5,\n  \"SAS JMP\", 8,\n  \"HTML/CSS\", 7,\n  \"Quarto\", 8,\n  \"Data Viz\", 9,\n  \"Git\", 8,\n  \"CDISC Standards\", 7\n) |&gt;\n  e_charts(x) |&gt;\n  e_radar(\n    y,\n    max = 10,\n    legend = FALSE,\n    areaStyle = list(),\n    radar = list(\n      shape = \"polygon\",\n      splitLine = list(show = FALSE),\n      radius = c(\"0%\", \"75%\")\n    )\n  ) |&gt;\n  e_color(color = \"#7a00e6\", background = \"#fff\") |&gt;\n  e_text_style(color = \"#000\", fontSize = 20, fontFamily = \"calibri\") |&gt;\n  e_tooltip(trigger = \"item\")"
+    "text": "Skills\n\nCode\nlibrary(echarts4r)\n\ntibble::tribble(\n  ~ x, ~y,\n  \"R\", 9.5,\n  \"Shiny\", 9,\n  \"SAS\", 7,\n  \"RBQM/QTLs\", 8,\n  \"Github Actions\", 8,\n  \"Python\", 5,\n  \"SAS JMP\", 8,\n  \"HTML/CSS\", 7,\n  \"Quarto\", 8,\n  \"Data Viz\", 9,\n  \"Git\", 8,\n  \"CDISC Standards\", 7\n) |&gt;\n  e_charts(x) |&gt;\n  e_radar(\n    y,\n    max = 10,\n    legend = FALSE,\n    areaStyle = list(),\n    radar = list(\n      shape = \"polygon\",\n      splitLine = list(show = FALSE),\n      radius = c(\"0%\", \"75%\")\n    )\n  ) |&gt;\n  e_color(color = \"#7a00e6\", background = \"#fff\") |&gt;\n  e_text_style(color = \"#23004C\", fontSize = 20, fontFamily = \"calibri\") |&gt;\n  e_tooltip(trigger = \"item\")"
   },
   {
     "objectID": "work.html#open-source-projects",
