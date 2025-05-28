@@ -1,7 +1,7 @@
 ---
-title: "Creating a Shift Table in R - A tidy approach to create Shift Tables using {tidyverse} and {gt}"
-description: "Posit Table Contest 2024 Honorable Mention"
-date: 04/30/2024
+title: "shiftR (Posit Table Contest 2024 Honorable Mention)"
+description: "A tidy approach to create Shift Tables using {tidyverse} and {gt}"
+date: 05/30/2024
 image: shiftR.png
 ---
 

@@ -2,7 +2,7 @@
 title: ""
 listing:
   contents: posts
-  sort: "date desc"
+  sort: "date asc"
   type: default
   sort-ui: false
   filter-ui: false
@@ -58,13 +58,29 @@ tibble::tribble(
   e_tooltip(trigger = "item")
 ```
 
+## Presentations
+
+### PHUSE SDE 2023
+
+<b>Clinical Visual Analytics for Review and Submission (CVARS)</b>
+With <a href = 'https://www.linkedin.com/in/smriti95anand/'>Smriti Anand</a>
+
+An open-source tool and package to enable generation of common analysis reports (tables and interactive plots) for clinical review and direct inclusion in submission for regulatory agencies. This includes a Shiny application for complete safety report generation from Analysis Model (ADaM) datasets.
+
+Slides available at [https://phuse.s3.eu-central-1.amazonaws.com/Archive/2023/SDE/APAC/Chennai/PRE_Chennai02.pdf](https://phuse.s3.eu-central-1.amazonaws.com/Archive/2023/SDE/APAC/Chennai/PRE_Chennai02.pdf)
+
+### DIA 2020
+
+<b>Utilizing a Bayesian Hierarchical Model to Design Quality Into a Clinical Trial and Allow Compliance with ICH E6 R2 Quality Tolerance Limits</b>
+With <a href = 'https://www.linkedin.com/in/chris-wells-11830327'>Chris Wells</a>
+
+The objective of this work is to introduce the concept and implementation of the use of Bayesian Hierarchical Modeling to Quality Tolerance Limits as mandated by ICHE6 R2
+
+Abstract available at [https://www.diaglobal.org/en/flagship/dia-2020/program/about-our-offerings/posters/Poster-Presentations/Poster-Presentations-Details?ParentProductID=8258687&ProductID=8793367&AbstractID=90694](https://www.diaglobal.org/en/flagship/dia-2020/program/about-our-offerings/posters/Poster-Presentations/Poster-Presentations-Details?ParentProductID=8258687&ProductID=8793367&AbstractID=90694)
+
 ## Open-Source Projects
 
-**pharmaverse**
-
 [![](open-source.png){fig-align="center"}](https://pharmaverse.org/)
-
-**Othe'R's**
 
 ::: column-page
 :::
