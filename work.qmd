@@ -23,6 +23,7 @@ title-block-banner: false
 ## Skills
 
 ```{r, fig.height=6, fig.width=10, results='asis'}
+#| echo: false
 library(echarts4r)
 
 tibble::tribble(

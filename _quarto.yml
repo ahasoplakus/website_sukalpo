@@ -16,7 +16,7 @@ website:
         text: Work
         icon: laptop
       - href: personal.qmd
-        text: About
+        text: Personal
         icon: person-badge
   
   page-footer:

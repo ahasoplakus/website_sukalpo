@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -190,7 +156,7 @@ window.Quarto = {
   <li class="nav-item">
     <a class="nav-link" href="./personal.html"> <i class="bi bi-person-badge" role="img">
 </i> 
-<span class="menu-text">About</span></a>
+<span class="menu-text">Personal</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -219,43 +185,8 @@ window.Quarto = {
 </section>
 <section id="skills" class="level2">
 <h2 class="anchored" data-anchor-id="skills">Skills</h2>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(echarts4r)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>tibble<span class="sc">::</span><span class="fu">tribble</span>(</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span> x, <span class="sc">~</span>y,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"R"</span>, <span class="fl">9.5</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Shiny"</span>, <span class="dv">9</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"SAS"</span>, <span class="dv">7</span>,</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"RBQM/QTLs"</span>, <span class="dv">8</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Github Actions"</span>, <span class="dv">8</span>,</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Python"</span>, <span class="dv">5</span>,</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"SAS JMP"</span>, <span class="dv">8</span>,</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"HTML/CSS"</span>, <span class="dv">7</span>,</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Quarto"</span>, <span class="dv">8</span>,</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Data Viz"</span>, <span class="dv">9</span>,</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Git"</span>, <span class="dv">8</span>,</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"CDISC Standards"</span>, <span class="dv">7</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">e_charts</span>(x) <span class="sc">|&gt;</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">e_radar</span>(</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    y,</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">max =</span> <span class="dv">10</span>,</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">areaStyle =</span> <span class="fu">list</span>(),</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">radar =</span> <span class="fu">list</span>(</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">shape =</span> <span class="st">"polygon"</span>,</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">splitLine =</span> <span class="fu">list</span>(<span class="at">show =</span> <span class="cn">FALSE</span>),</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">radius =</span> <span class="fu">c</span>(<span class="st">"0%"</span>, <span class="st">"75%"</span>)</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">e_color</span>(<span class="at">color =</span> <span class="st">"#7a00e6"</span>, <span class="at">background =</span> <span class="st">"#fff"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">e_text_style</span>(<span class="at">color =</span> <span class="st">"#23004C"</span>, <span class="at">fontSize =</span> <span class="dv">20</span>, <span class="at">fontFamily =</span> <span class="st">"calibri"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">e_tooltip</span>(<span class="at">trigger =</span> <span class="st">"item"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="echarts4r html-widget html-fill-item" id="htmlwidget-c11ba623b95df8b95bc4" style="width:100%;height:500px;"></div>
-<script type="application/json" data-for="htmlwidget-c11ba623b95df8b95bc4">{"x":{"theme":"","tl":false,"draw":true,"renderer":"canvas","events":[],"buttons":[],"opts":{"radar":[{"shape":"polygon","splitLine":{"show":false},"radius":["0%","75%"],"indicator":[{"name":"R","max":"10"},{"name":"Shiny","max":"10"},{"name":"SAS","max":"10"},{"name":"RBQM/QTLs","max":"10"},{"name":"Github Actions","max":"10"},{"name":"Python","max":"10"},{"name":"SAS JMP","max":"10"},{"name":"HTML/CSS","max":"10"},{"name":"Quarto","max":"10"},{"name":"Data Viz","max":"10"},{"name":"Git","max":"10"},{"name":"CDISC Standards","max":"10"}]}],"series":[{"type":"radar","data":[{"value":[9.5,9,7,8,8,5,8,7,8,9,8,7],"name":"y"}],"radarIndex":0,"areaStyle":[]}],"color":["#7a00e6"],"backgroundColor":"#fff","textStyle":{"color":"#23004C","fontSize":20,"fontFamily":"calibri"},"tooltip":{"trigger":"item"}},"dispose":true},"evals":[],"jsHooks":[]}</script>
+<div class="echarts4r html-widget html-fill-item" id="htmlwidget-87ef85eadeba1fdb345f" style="width:100%;height:500px;"></div>
+<script type="application/json" data-for="htmlwidget-87ef85eadeba1fdb345f">{"x":{"theme":"","tl":false,"draw":true,"renderer":"canvas","events":[],"buttons":[],"opts":{"radar":[{"shape":"polygon","splitLine":{"show":false},"radius":["0%","75%"],"indicator":[{"name":"R","max":"10"},{"name":"Shiny","max":"10"},{"name":"SAS","max":"10"},{"name":"RBQM/QTLs","max":"10"},{"name":"Github Actions","max":"10"},{"name":"Python","max":"10"},{"name":"SAS JMP","max":"10"},{"name":"HTML/CSS","max":"10"},{"name":"Quarto","max":"10"},{"name":"Data Viz","max":"10"},{"name":"Git","max":"10"},{"name":"CDISC Standards","max":"10"}]}],"series":[{"type":"radar","data":[{"value":[9.5,9,7,8,8,5,8,7,8,9,8,7],"name":"y"}],"radarIndex":0,"areaStyle":[]}],"color":["#7a00e6"],"backgroundColor":"#fff","textStyle":{"color":"#23004C","fontSize":20,"fontFamily":"calibri"},"tooltip":{"trigger":"item"}},"dispose":true},"evals":[],"jsHooks":[]}</script>
 </section>
 <section id="open-source-projects" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="open-source-projects">Open-Source Projects</h2>
