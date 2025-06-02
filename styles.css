@@ -1,1 +1,4 @@
-/* css styles */
+.navbar {
+  --bs-navbar-brand-color: #f8f5f0!important;
+  --bs-navbar-brand-hover-color: #23004C !important;
+}

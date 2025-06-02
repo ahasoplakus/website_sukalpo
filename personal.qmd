@@ -16,4 +16,64 @@ When I can carve out a bit more time, I love going on road trips (I’ve been dr
 ![](kolkata.jpg){fig-align="center"}
 :::
 
-![](Interests.png){fig-align="center"}
+```{r}
+#| echo: false
+library(echarts4r)
+tf <- data.frame(
+  terms =
+    c(
+      "Porcupine Tree",
+      "Satyajit Ray",
+      "Abbas Kiarostami",
+      "Scorsese",
+      "Man United",
+      "Better Call Saul",
+      "Bong Joon Ho",
+      "Tarantino",
+      "There will be blood",
+      "Like Father Like Son",
+      "Aranyer Dinratri",
+      "Mahanagar",
+      "Taxi Driver",
+      "Steely Dan",
+      "Sade",
+      "Derek Trucks",
+      "Warren Haynes",
+      "Led Zeppelin",
+      "Air"
+    ),
+  freq = c(
+    56,
+    46,
+    28,
+    42,
+    61,
+    52,
+    24,
+    32,
+    22,
+    26,
+    20,
+    30,
+    29,
+    34,
+    27,
+    18,
+    35,
+    25,
+    40
+  )
+) |>
+  dplyr::arrange(-freq)
+
+tf |>
+  e_color_range(
+    freq, color, colors = c("#7a00e6", "#23004C", "#000009")
+  ) |>
+  e_charts() |>
+  e_cloud(terms,
+          freq,
+          color,
+          shape = "circle",
+          sizeRange = c(18, 90))
+```

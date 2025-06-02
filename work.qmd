@@ -46,10 +46,10 @@ tibble::tribble(
     y,
     max = 10,
     legend = FALSE,
-    areaStyle = list(),
+    areaStyle = list(opacity = 0.25),
     radar = list(
       shape = "polygon",
-      splitLine = list(show = FALSE),
+      splitLine = list(show = TRUE),
       radius = c("0%", "75%")
     )
   ) |>

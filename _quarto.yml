@@ -4,6 +4,7 @@ project:
     - cv.pdf
 
 website:
+  favicon: avatar.jpg
   title: "Sukalpo Saha"
   site-url: "https://ahasoplakus.quarto.pub/kalpoverse/"
   search: false
