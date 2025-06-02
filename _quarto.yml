@@ -4,7 +4,7 @@ project:
     - cv.pdf
 
 website:
-  favicon: avatar.jpg
+  favicon: favicon.ico
   title: "Sukalpo Saha"
   site-url: "https://ahasoplakus.quarto.pub/kalpoverse/"
   search: false
@@ -15,7 +15,7 @@ website:
         icon: person-raised-hand
       - href: work.qmd
         text: Work
-        icon: laptop
+        icon: journal-code
       - href: personal.qmd
         text: Personal
         icon: person-badge

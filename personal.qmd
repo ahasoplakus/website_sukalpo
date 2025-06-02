@@ -6,7 +6,7 @@ title: ""
 
 I live in Hyderabad, Telangana, with my wife Amruta and our Indie pup, Disco. Originally from Kolkata, West Bengal, I spent my formative years there, though over time, I’ve also called Mumbai, Bangalore, and now Hyderabad home.
 
-In my free time, I enjoy watching films—especially realist dramas, thrillers, and crime stories—and listening to music—mainly Indian Classical, Classic/Progressive Rock, Jazz and Soul. I’m a passionate football fan and have been a loyal supporter of Manchester United since 2003. So, if you catch me in a grumpy mood on a Monday morning, chances are United had a rough weekend.
+In my free time, I enjoy watching films and TV series—especially realist dramas, thrillers, and crime stories—and listening to music—mainly Indian Classical, Classic/Progressive Rock, Jazz and Soul. I’m a passionate football fan and have been a loyal supporter of Manchester United since 2003-04. So, if you catch me in a grumpy mood on a Monday morning, chances are United had a rough weekend.
 
 When I can carve out a bit more time, I love going on road trips (I’ve been driving for about a year now), exploring new places—preferably those near the sea—and taking short hikes to unwind and reconnect with nature.
 
@@ -24,7 +24,7 @@ tf <- data.frame(
     c(
       "Porcupine Tree",
       "Satyajit Ray",
-      "Abbas Kiarostami",
+      "Kiarostami",
       "Scorsese",
       "Man United",
       "Better Call Saul",
@@ -36,11 +36,16 @@ tf <- data.frame(
       "Mahanagar",
       "Taxi Driver",
       "Steely Dan",
-      "Sade",
+      "Portishead",
       "Derek Trucks",
       "Warren Haynes",
       "Led Zeppelin",
-      "Air"
+      "Radiohead",
+      "Def Leppard",
+      "The Wire",
+      "Hitchcock",
+      "Wong Kar-Wai",
+      "Spielberg"
     ),
   freq = c(
     56,
@@ -58,22 +63,26 @@ tf <- data.frame(
     29,
     34,
     27,
-    18,
+    23,
     35,
     25,
-    40
+    32,
+    33,
+    37,
+    36,
+    21,
+    34
   )
 ) |>
   dplyr::arrange(-freq)
 
 tf |>
   e_color_range(
-    freq, color, colors = c("#7a00e6", "#23004C", "#000009")
+    freq, color, colors = c("#872341", "#7a00e6", "#23004C", "#255F38")
   ) |>
   e_charts() |>
   e_cloud(terms,
           freq,
           color,
-          shape = "circle",
-          sizeRange = c(18, 90))
+          shape = "cardioid")
 ```
