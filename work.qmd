@@ -49,7 +49,11 @@ tibble::tribble(
     areaStyle = list(opacity = 0.25),
     radar = list(
       shape = "polygon",
-      splitLine = list(show = TRUE),
+      splitArea = list(show = FALSE),
+      splitLine = list(
+        show = TRUE,
+        lineStyle = list(color = c("#606060", "#606060"))
+      ),
       radius = c("0%", "75%")
     )
   ) |>
